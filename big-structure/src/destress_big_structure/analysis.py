@@ -20,6 +20,7 @@ import requests
 
 from .elm_types import (
     DesignMetrics,
+    DesignMetricsAASSComp,
     BudeFFOutput,
     EvoEF2Output,
     DFIRE2Output,
@@ -244,6 +245,19 @@ def create_metrics_from_pdb(pdb_string: str) -> DesignMetrics:
     return design_metrics
 
 
+def create_metrics_from_pdb_aasscomp(pdb_string: str) -> DesignMetricsAASSComp:
+
+    ampal_assembly = ampal.load_pdb(pdb_string, path=False)
+    # relabel everything to remove annoying insertion codes!
+    ampal_assembly.relabel_all()
+    if isinstance(ampal_assembly, ampal.AmpalContainer):
+        ampal_assembly = ampal_assembly[0]
+    if not ampal_assembly._molecules:
+        raise ValueError("No PDB format data found in file.")
+    design_metrics = analyse_design_aa_ss_comp(ampal_assembly)
+    return design_metrics
+
+
 def analyse_design(design: ampal.Assembly) -> DesignMetrics:
     assert (
         EVOEF2_BINARY_PATH
@@ -304,6 +318,38 @@ def analyse_design(design: ampal.Assembly) -> DesignMetrics:
         dfire2_results=run_dfire2(design.pdb, DFIRE2_FOLDER_PATH),
         rosetta_results=run_rosetta(design.pdb, ROSETTA_BINARY_PATH),
         aggrescan3d_results=run_aggrescan3d(design.pdb, AGGRESCAN3D_SCRIPT_PATH),
+    )
+    return design_metrics
+
+def analyse_design_aa_ss_comp(design: ampal.Assembly) -> DesignMetricsAASSComp:
+
+    try:
+        ev.tag_dssp_data(design)
+    except subprocess.CalledProcessError as e:
+        print(f"Cannot compute the DSSP assignment due to a CalledProcessError:\n {e}")
+
+    sequence_info = {
+        chain.id: SequenceInfo(
+            sequence="".join(m.mol_letter for m in chain),
+            dssp_assignment="".join(
+                m.tags["dssp_data"]["ss_definition"] for m in chain
+            ),
+        )
+        for chain in design
+        if isinstance(chain, ampal.Polypeptide)
+    }
+    full_sequence = "".join(si.sequence for si in sequence_info.values())
+    dssp_assignment = "".join(
+        si.dssp_assignment for si in sequence_info.values()
+    ).replace(" ", "-")
+    num_of_residues = len(full_sequence)
+    design_metrics = DesignMetrics(
+        sequence_info=sequence_info,
+        full_sequence=full_sequence,
+        dssp_assignment=dssp_assignment,
+        composition={
+            k: v / num_of_residues for (k, v) in Counter(full_sequence).items()
+        },
     )
     return design_metrics
 

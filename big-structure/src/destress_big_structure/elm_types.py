@@ -290,6 +290,15 @@ class DesignMetrics:
     rosetta_results: RosettaOutput
     aggrescan3d_results: Aggrescan3DOutput
 
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass
+class DesignMetricsAASSComp:
+    sequence_info: Dict[str, SequenceInfo]
+    full_sequence: str
+    dssp_assignment: str
+    composition: Dict[str, float]
+    num_of_residues: int
+
 
 @dataclass
 class DesignMetricsOutputRow:
@@ -365,6 +374,55 @@ class DesignMetricsOutputRow:
     aggrescan3d_avg_value: float
     aggrescan3d_min_value: float
     aggrescan3d_max_value: float
+
+    # Defining the __eq__method to compare all the fields except the
+    # file_name field
+    def __eq__(self, other):
+        self_dict = self.__dict__
+        other_dict = other.__dict__
+
+        self_dict_new = {k: v for k, v in self_dict.items() if k not in ["file_name"]}
+        other_dict_new = {k: v for k, v in other_dict.items() if k not in ["file_name"]}
+
+        return self_dict_new == other_dict_new
+    
+
+@dataclass
+class DesignMetricsOutputRowAASSComp:
+    design_name: str
+    file_name: str
+    full_sequence: str
+    dssp_assignment: str
+    composition_ALA: float
+    composition_CYS: float
+    composition_ASP: float
+    composition_GLU: float
+    composition_PHE: float
+    composition_GLY: float
+    composition_HIS: float
+    composition_ILE: float
+    composition_LYS: float
+    composition_LEU: float
+    composition_MET: float
+    composition_ASN: float
+    composition_PRO: float
+    composition_GLN: float
+    composition_ARG: float
+    composition_SER: float
+    composition_THR: float
+    composition_VAL: float
+    composition_TRP: float
+    composition_UNK: float
+    composition_TYR: float
+    ss_prop_alpha_helix: float
+    ss_prop_beta_bridge: float
+    ss_prop_beta_strand: float
+    ss_prop_3_10_helix: float
+    ss_prop_pi_helix: float
+    ss_prop_hbonded_turn: float
+    ss_prop_bend: float
+    ss_prop_loop: float
+    num_residues: float
 
     # Defining the __eq__method to compare all the fields except the
     # file_name field

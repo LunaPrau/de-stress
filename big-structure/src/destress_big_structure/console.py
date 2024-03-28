@@ -26,10 +26,11 @@ from destress_big_structure.big_structure_models import (
 from typing import Dict
 from destress_big_structure.elm_types import (
     DesignMetrics,
+    DesignMetricsAASSComp,
 )
 from destress_big_structure import analysis
 import destress_big_structure.create_entry as create_entry
-from .elm_types import DesignMetricsOutputRow
+from .elm_types import DesignMetricsOutputRow, DesignMetricsOutputRowAASSComp
 
 ProcPdbResult = tp.Union[tp.Tuple[str, PdbModel], tp.Tuple[str, str]]
 
@@ -284,7 +285,7 @@ def unpacking_comp_metrics(design_metrics: DesignMetrics) -> Dict:
     return comp_metrics
 
 
-def headless_destress(pdb_file: str) -> DesignMetricsOutputRow:
+def headless_destress(pdb_file: str) -> DesignMetricsOutputRowAASSComp:
 
     """Running DE-STRESS in headless mode (using CLI rather than
     DE-STRESS user interface) for a single pdb file.
@@ -346,45 +347,7 @@ def headless_destress(pdb_file: str) -> DesignMetricsOutputRow:
         "ss_prop_hbonded_turn",
         "ss_prop_bend",
         "ss_prop_loop",
-        "hydrophobic_fitness",
-        "isoelectric_point",
-        "charge",
-        "mass",
         "num_residues",
-        "packing_density",
-        "budeff_total",
-        "budeff_steric",
-        "budeff_desolvation",
-        "budeff_charge",
-        "evoef2_total",
-        "evoef2_ref_total",
-        "evoef2_intraR_total",
-        "evoef2_interS_total",
-        "evoef2_interD_total",
-        "dfire2_total",
-        "rosetta_total",
-        "rosetta_fa_atr",
-        "rosetta_fa_rep",
-        "rosetta_fa_intra_rep",
-        "rosetta_fa_elec",
-        "rosetta_fa_sol",
-        "rosetta_lk_ball_wtd",
-        "rosetta_fa_intra_sol_xover4",
-        "rosetta_hbond_lr_bb",
-        "rosetta_hbond_sr_bb",
-        "rosetta_hbond_bb_sc",
-        "rosetta_hbond_sc",
-        "rosetta_dslf_fa13",
-        "rosetta_rama_prepro",
-        "rosetta_p_aa_pp",
-        "rosetta_fa_dun",
-        "rosetta_omega",
-        "rosetta_pro_close",
-        "rosetta_yhh_planarity",
-        "aggrescan3d_total_value",
-        "aggrescan3d_avg_value",
-        "aggrescan3d_min_value",
-        "aggrescan3d_max_value",
     ]
 
     # Loading in the PDB file and converting it to an ampal assembly
@@ -403,7 +366,7 @@ def headless_destress(pdb_file: str) -> DesignMetricsOutputRow:
         )
 
         # Creating the design metrics output row
-        design_metrics_output_row = DesignMetricsOutputRow(
+        design_metrics_output_row = DesignMetricsOutputRowAASSComp(
             design_name=design_name,
             file_name=file_name,
             **design_metrics_output,
@@ -425,7 +388,7 @@ def headless_destress(pdb_file: str) -> DesignMetricsOutputRow:
         try:
 
             # Running the DE-STRESS metrics for the pdb file
-            design_metrics = analysis.create_metrics_from_pdb(pdb_string_filtered)
+            design_metrics = analysis.create_metrics_from_pdb_aasscomp(pdb_string_filtered)
 
             # Unpacking the compisition metrics
             comp_metrics = unpacking_comp_metrics(design_metrics)
@@ -507,51 +470,14 @@ def headless_destress(pdb_file: str) -> DesignMetricsOutputRow:
                         ss_prop_hbonded_turn,
                         ss_prop_bend,
                         ss_prop_loop,
-                        design_metrics.hydrophobic_fitness,
-                        design_metrics.isoelectric_point,
-                        design_metrics.charge,
-                        design_metrics.mass,
                         design_metrics.num_of_residues,
-                        design_metrics.packing_density,
-                        design_metrics.budeFF_results.total_energy,
-                        design_metrics.budeFF_results.steric,
-                        design_metrics.budeFF_results.desolvation,
-                        design_metrics.budeFF_results.charge,
-                        design_metrics.evoEF2_results.total,
-                        design_metrics.evoEF2_results.ref_total,
-                        design_metrics.evoEF2_results.intraR_total,
-                        design_metrics.evoEF2_results.interS_total,
-                        design_metrics.evoEF2_results.interD_total,
-                        design_metrics.dfire2_results.total,
-                        design_metrics.rosetta_results.total_score,
-                        design_metrics.rosetta_results.fa_atr,
-                        design_metrics.rosetta_results.fa_rep,
-                        design_metrics.rosetta_results.fa_intra_rep,
-                        design_metrics.rosetta_results.fa_elec,
-                        design_metrics.rosetta_results.fa_sol,
-                        design_metrics.rosetta_results.lk_ball_wtd,
-                        design_metrics.rosetta_results.fa_intra_sol_xover4,
-                        design_metrics.rosetta_results.hbond_lr_bb,
-                        design_metrics.rosetta_results.hbond_sr_bb,
-                        design_metrics.rosetta_results.hbond_bb_sc,
-                        design_metrics.rosetta_results.hbond_sc,
-                        design_metrics.rosetta_results.dslf_fa13,
-                        design_metrics.rosetta_results.rama_prepro,
-                        design_metrics.rosetta_results.p_aa_pp,
-                        design_metrics.rosetta_results.fa_dun,
-                        design_metrics.rosetta_results.omega,
-                        design_metrics.rosetta_results.pro_close,
-                        design_metrics.rosetta_results.yhh_planarity,
-                        design_metrics.aggrescan3d_results.total_value,
-                        design_metrics.aggrescan3d_results.avg_value,
-                        design_metrics.aggrescan3d_results.min_value,
-                        design_metrics.aggrescan3d_results.max_value,
+
                     ],
                 )
             )
 
             # Creating the design metrics output row
-            design_metrics_output_row = DesignMetricsOutputRow(
+            design_metrics_output_row = DesignMetricsOutputRowAASSComp(
                 design_name=design_name,
                 file_name=file_name,
                 **design_metrics_output,
@@ -568,7 +494,7 @@ def headless_destress(pdb_file: str) -> DesignMetricsOutputRow:
             )
 
             # Creating the design metrics output row
-            design_metrics_output_row = DesignMetricsOutputRow(
+            design_metrics_output_row = DesignMetricsOutputRowAASSComp(
                 design_name=design_name,
                 file_name=file_name,
                 **design_metrics_output,
